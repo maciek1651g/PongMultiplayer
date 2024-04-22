@@ -1,3 +1,5 @@
+package io.github.pong;
+
 public class Pallette {
     private final int x;
     private final int y; // Pozycja paletki

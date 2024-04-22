@@ -1,4 +1,7 @@
+package io.github.pong;
+
 public class Ball {
+
     private final int dx;
     private final Pallette palletteLeft;
     private final Pallette palletteRight; // Referencje do palettek graczy

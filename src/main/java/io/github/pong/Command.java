@@ -1,3 +1,5 @@
+package io.github.pong;
+
 public enum Command {
     JOIN_ROOM, // Dołączenie do pokoju
     LEAVE_ROOM, // Opuścienie pokoju

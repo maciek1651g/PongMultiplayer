@@ -1,3 +1,5 @@
+package io.github.pong;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -5,16 +7,25 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 import com.google.gson.Gson;
+import io.github.pong.handlers.ClientCommandHandler;
+import io.github.pong.message.GameOverCommand;
+import io.github.pong.message.GameUpdateCommand;
+import io.github.pong.message.Message;
+import lombok.Getter;
 
+@Getter
 public class ClientHandler implements Runnable {
+
     private final Socket socket;
     private final Server server;
     private final BufferedReader input;
     private final PrintWriter output;
+    private final Gson gson;
 
     public ClientHandler(Socket socket, Server server) throws IOException {
         this.socket = socket;
         this.server = server;
+        this.gson = new Gson();
         input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         output = new PrintWriter(socket.getOutputStream(), true);
     }
@@ -47,11 +58,8 @@ public class ClientHandler implements Runnable {
         StringBuilder response = new StringBuilder();
         response.append("Available Rooms and Modes:\n");
         response.append("2-Player Rooms:\n");
-        for (GameRoom room : server.getRooms()) {
-            response.append(room.toString()).append("\n");
-        }
+        server.getRooms().forEach(room -> response.append(room.toString()).append("\n"));
         response.append("end_of_response");
-
         output.println(response);
     }
 
@@ -59,10 +67,6 @@ public class ClientHandler implements Runnable {
         // Wyodrębnienie id pokoju z zapytania
         String roomId = request.split(" ")[1];
         handleJoinRoom(roomId);
-    }
-
-    public PrintWriter getOutput() {
-        return output;
     }
 
     public void handleJoinRoom(String roomId) {
@@ -103,11 +107,13 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    public void sendMap(char[][] map) {
-        Message message = new Message(Command.GAME_UPDATE, map);
+    public void sendMap(Character[][] map) {
+        String json = gson.toJson(new GameUpdateCommand(map));
+        output.println(json);
+    }
 
-        // use JSON to serialize the message
-        String json = new Gson().toJson(message);
+    public void sendGameEnd() {
+        String json = gson.toJson(new GameOverCommand());
         output.println(json);
     }
 }

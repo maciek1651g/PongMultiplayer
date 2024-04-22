@@ -1,12 +1,26 @@
-public class Map {
-    private final char[][] grid;
+package io.github.pong;
+
+import lombok.Getter;
+
+
+@Getter
+public class GameMap {
+
+    private final Character[][] grid;
     private final int width;
     private final int height;
 
-    public Map(int width, int height) {
+    public GameMap(int width, int height) {
         this.width = width;
         this.height = height;
-        this.grid = new char[height][width];
+        this.grid = new Character[height][width];
+        clearMap();
+    }
+
+    public GameMap(Character[][] map) {
+        this.grid = map;
+        this.width = map[0].length;
+        this.height = map.length;
         clearMap();
     }
 
@@ -24,7 +38,7 @@ public class Map {
         }
     }
 
-    public boolean moveBall(int x, int y, char element {
+    public boolean moveBall(int x, int y, char element) {
         if (x >= 0 && x < width && y >= 0 && y < height) {
             grid[y][x] = ' ';
             return true;
@@ -37,10 +51,6 @@ public class Map {
             return grid[y][x];
         }
         return '\0';
-    }
-
-    public char[][] getGrid() {
-        return grid;
     }
 
     public void printMap() {

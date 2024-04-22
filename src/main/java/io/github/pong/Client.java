@@ -1,3 +1,9 @@
+package io.github.pong;
+
+import com.google.gson.Gson;
+import io.github.pong.handlers.ClientCommandHandler;
+import io.github.pong.message.GameUpdateCommand;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -6,31 +12,17 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
 public class Client {
+
     private final Socket socket;
     private final BufferedReader input;
     private final PrintWriter output;
+    private final ClientCommandHandler clientCommandHandler;
 
-    public Client(final String serverAddress, final int serverPort) throws IOException {
+    public Client(final String serverAddress, final int serverPort, ClientCommandHandler clientCommandHandler) throws IOException {
         this.socket = new Socket(serverAddress, serverPort);
         this.input = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), StandardCharsets.UTF_8));
         this.output = new PrintWriter(this.socket.getOutputStream(), true, StandardCharsets.UTF_8);
-    }
-
-    public static void main(final String[] args) {
-        try {
-            final Client client = new Client("localhost", 12345);
-            System.out.println("Press Enter to request available rooms from the server...");
-            final BufferedReader sysInput = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
-            sysInput.readLine(); // Czekanie na wciśnięcie Enter
-            client.sendRequestForRooms();
-            client.receiveResponse();
-            System.out.println("Enter the ID of the room you want to join:");
-            final String roomId = sysInput.readLine();
-            client.joinRoom(roomId);
-            client.close();
-        } catch (final IOException e) {
-            e.printStackTrace();
-        }
+        this.clientCommandHandler = clientCommandHandler;
     }
 
     public void sendRequestForRooms() {
@@ -41,6 +33,7 @@ public class Client {
         try {
             String response;
             while (null != (response = input.readLine())) {
+
                 if ("end_of_response".equals(response)) {
                     break;  // Przerwanie pętli, gdy serwer zasygnalizuje koniec transmisji
                 }
@@ -83,9 +76,8 @@ public class Client {
         try {
             String response;
             while (null != (response = input.readLine())) {
-                if (response.contains("Game over")) {
-                    break;
-                }
+                System.out.println(response);
+                clientCommandHandler.handleCommand(response);
             }
 
         } catch (IOException e) {
