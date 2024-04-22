@@ -22,6 +22,8 @@ public class ClientHandler implements Runnable {
     private final PrintWriter output;
     private final Gson gson;
 
+    private GameRoom room;
+
     public ClientHandler(Socket socket, Server server) throws IOException {
         this.socket = socket;
         this.server = server;
@@ -40,7 +42,7 @@ public class ClientHandler implements Runnable {
                 } else if (request.startsWith("join_room")) {
                     handleJoinRoomRequest(request);
                 } else {
-                    System.out.println("Unknown request from client: " + request);
+                    handleMessageRequest(request);
                 }
             }
         } catch (IOException e) {
@@ -52,6 +54,12 @@ public class ClientHandler implements Runnable {
                 e.printStackTrace();
             }
         }
+    }
+
+    private void handleMessageRequest(String request) {
+        room.getClients().stream()
+                .filter(client -> client != this)
+                .forEach(client -> client.getOutput().println(request));
     }
 
     private void handleRoomsAndModesRequest() {
@@ -71,6 +79,7 @@ public class ClientHandler implements Runnable {
 
     public void handleJoinRoom(String roomId) {
         GameRoom room = server.getRoomById(roomId);
+
         if (room == null) {
             output.println("Invalid room ID");
             return;
@@ -81,6 +90,7 @@ public class ClientHandler implements Runnable {
                 output.println("Room is full");
             } else {
                 room.addClient(this);
+                this.room = room;
                 output.println("You have joined the room. Waiting for all players to join...");
 
                 // Sprawdzenie czy pokój jest już pełny

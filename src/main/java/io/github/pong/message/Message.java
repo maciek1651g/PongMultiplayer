@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class Message<T> {
+public class Message<T> {
     private Command command;
     private T messageContent;
 }
