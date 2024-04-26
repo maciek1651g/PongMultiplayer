@@ -98,6 +98,7 @@ public class ClientHandler implements Runnable {
                     for (ClientHandler client : room.getClients()) {
                         client.getOutput().println("Room is now full. Game will start soon.");
                     }
+                    room.startGame();
                 }
             }
         }

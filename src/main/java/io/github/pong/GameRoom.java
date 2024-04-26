@@ -12,7 +12,8 @@ public class GameRoom {
     private final List<ClientHandler> clients;
     private final GameMap map;
     private final Ball ball;
-    private Pallette palletteTop, palletteBottom;
+    private final Pallette paletteLeft;
+    private final Pallette paletteRight;
 
     private Timer timer;
 
@@ -22,9 +23,9 @@ public class GameRoom {
         this.clients = new ArrayList<>();
 
         map = new GameMap(100, 100);
-        ball = new Ball(50, 50, 1, 1, palletteTop, palletteBottom); // Utworzenie piłki
-        palletteTop = new Pallette(45, 0, 10, 2); // Paletka górna
-        palletteBottom = new Pallette(45, 98, 10, 2); // Paletka dolna
+        paletteLeft = new Pallette(45, 0, 10, 2); // Paletka górna
+        paletteRight = new Pallette(45, 98, 10, 2); // Paletka dolna
+        ball = new Ball(50, 50, 1, 1, paletteLeft, paletteRight); // Utworzenie piłki
     }
 
     public String getId() {
@@ -62,7 +63,7 @@ public class GameRoom {
             public void run() {
                 updateGame();
             }
-        }, 0, 20); // Aktualizacja co 20 ms
+        }, 0, 100); // Aktualizacja co 20 ms
     }
 
     private void updateGame() {
@@ -70,8 +71,8 @@ public class GameRoom {
         ball.move();
         map.clearMap();
         boolean isBallOutside = map.moveBall(ball.getX(), ball.getY(), 'O');
-        map.setElement(palletteTop.getX(), palletteTop.getY(), '|');
-        map.setElement(palletteBottom.getX(), palletteBottom.getY(), '|');
+        map.setElement(paletteLeft.getX(), paletteLeft.getY(), '|');
+        map.setElement(paletteRight.getX(), paletteRight.getY(), '|');
         broadcastMapToClients();
 
         if (isBallOutside) {
@@ -80,6 +81,7 @@ public class GameRoom {
             for (ClientHandler client : clients) {
                 client.sendGameEnd();
             }
+            clearRoom();
         }
     }
 

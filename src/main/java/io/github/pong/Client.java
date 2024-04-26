@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 
 public class Client {
 
+    final BufferedReader sysInput = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
     private final Socket socket;
     private final BufferedReader input;
     private final PrintWriter output;
@@ -52,8 +53,13 @@ public class Client {
             String response;
             while (null != (response = input.readLine())) {
                 System.out.println("Server response: " + response);
-                if (response.contains("Room is now full")) {
+                if (response.contains("Room is now full. Game will start soon.")) {
+                    // start game
                     handleGameLoop();
+                    break;
+                }
+                if (response.contains("Room is full")) {
+                    // room is full
                     break;
                 }
             }
@@ -81,7 +87,6 @@ public class Client {
     }
 
     public void handleMainLoop() {
-        final BufferedReader sysInput = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
         while (true) {
             try {
                 while (true) {
@@ -110,6 +115,8 @@ public class Client {
         switch (input) {
             case "1":
                 handleJoinRoom();
+                System.out.print("Press Enter to continue...");
+                sysInput.readLine();
                 break;
             case "2":
                 close();
@@ -124,7 +131,6 @@ public class Client {
         sendRequestForRooms();
         receiveRoomsResponse();
         System.out.print("Enter the ID of the room you want to join: ");
-        final BufferedReader sysInput = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
         final String roomId = sysInput.readLine();
         joinRoom(roomId);
     }
