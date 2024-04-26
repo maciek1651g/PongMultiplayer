@@ -1,8 +1,6 @@
 package io.github.pong;
 
-import com.google.gson.Gson;
 import io.github.pong.handlers.ClientCommandHandler;
-import io.github.pong.message.GameUpdateCommand;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -29,7 +27,7 @@ public class Client {
         this.output.println("request_rooms_modes");
     }
 
-    public void receiveResponse() {
+    public void receiveRoomsResponse() {
         try {
             String response;
             while (null != (response = input.readLine())) {
@@ -37,7 +35,7 @@ public class Client {
                 if ("end_of_response".equals(response)) {
                     break;  // Przerwanie pętli, gdy serwer zasygnalizuje koniec transmisji
                 }
-                System.out.println("Server response: " + response);
+                System.out.println(response);
             }
         } catch (final IOException e) {
             e.printStackTrace();
@@ -54,12 +52,9 @@ public class Client {
             String response;
             while (null != (response = input.readLine())) {
                 System.out.println("Server response: " + response);
-                if (response.contains("You have joined the room")) {
-                    handleGameLoop();  // Rozpoczęcie pętli gry
+                if (response.contains("Room is now full")) {
+                    handleGameLoop();
                     break;
-                }
-                if (response.contains("Game will start soon.") || response.contains("Room is full") || response.contains("Invalid room ID")) {
-                    break;  // Przerywamy oczekiwanie, gdy pokój jest pełny lub ID jest nieprawidłowe
                 }
             }
         } catch (final IOException e) {
@@ -83,5 +78,54 @@ public class Client {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void handleMainLoop() {
+        final BufferedReader sysInput = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
+        while (true) {
+            try {
+                while (true) {
+                    printMainMenu();
+
+                    final String input = sysInput.readLine();
+                    handleMainMenuInput(input);
+                }
+            } catch (final IOException e) {
+                e.printStackTrace();
+                System.out.println("Connection error. Please try again later.");
+            }
+        }
+    }
+
+    private void printMainMenu() {
+        //clear console
+        System.out.print("\033[H\033[2J");
+
+        System.out.println("1. Request available rooms");
+        System.out.println("2. Exit");
+        System.out.print("Enter your choice: ");
+    }
+
+    private void handleMainMenuInput(final String input) throws IOException {
+        switch (input) {
+            case "1":
+                handleJoinRoom();
+                break;
+            case "2":
+                close();
+                System.exit(0);
+                break;
+            default:
+                System.out.println("Invalid input. Please try again.");
+        }
+    }
+
+    private void handleJoinRoom() throws IOException {
+        sendRequestForRooms();
+        receiveRoomsResponse();
+        System.out.print("Enter the ID of the room you want to join: ");
+        final BufferedReader sysInput = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
+        final String roomId = sysInput.readLine();
+        joinRoom(roomId);
     }
 }
