@@ -63,7 +63,7 @@ public class GameRoom {
             public void run() {
                 updateGame();
             }
-        }, 0, 100); // Aktualizacja co 20 ms
+        }, 0, 500); // Aktualizacja co 20 ms
     }
 
     private void updateGame() {

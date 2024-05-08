@@ -1,6 +1,8 @@
 package io.github.pong;
 
+import com.google.gson.Gson;
 import io.github.pong.handlers.ClientCommandHandler;
+import io.github.pong.message.Message;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,6 +10,9 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Client {
 
@@ -78,9 +83,30 @@ public class Client {
             String response;
             while (null != (response = input.readLine())) {
                 System.out.println(response);
-                clientCommandHandler.handleCommand(response);
-            }
+                //  clientCommandHandler.handleCommand(response);
+                var parsed = new Gson().fromJson(response, HashMap.class);
+                var gameMap = parsed.get("messageContent");
 
+                if (!(gameMap instanceof List)) {
+                    // Game Over
+                    return;
+                }
+
+                var content = (List<List>) gameMap;
+
+                for (List list : content) {
+
+                    for (Object object : list) {
+                        System.out.print(object);
+                    }
+
+                    System.out.println();
+                }
+
+                //  print map
+
+                System.out.flush();
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -104,7 +130,7 @@ public class Client {
 
     private void printMainMenu() {
         //clear console
-        System.out.print("\033[H\033[2J");
+        System.out.flush();
 
         System.out.println("1. Request available rooms");
         System.out.println("2. Exit");
